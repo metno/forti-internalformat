@@ -11,7 +11,7 @@ Data is organized into **areas** and **versions**:
 - An **area** refers to a limited geographic region, typically the domain of a single forecast model.
 - A **version** number identifies which forecast for an area is the newest — the highest version number wins.
 
-A single `rawdataforecaster` instance can serve data from several areas, but only one area per request. It selects the area whose grid point is closest to the requested location, and always serves the latest version for that area.
+A single `rawdataforecaster` instance is supposed to serve data from several areas, but only one area per request. It will select the area whose grid point is closest to the requested location, and always the latest version for that area.
 
 Within an area, data is expressed as one or more lists of latitude/longitude values with accompanying forecast parameter values. Multiple lat/lon lists may exist to allow different parameters to have different resolutions while still covering the same geographic area.
 
