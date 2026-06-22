@@ -12,15 +12,34 @@ import (
 	"gocloud.dev/blob"
 )
 
+// Client provides read access to forecast data stored in a blob bucket using
+// the internal format. Use [NewClient] or [NewClientFromBucket] to obtain an
+// instance.
 type Client interface {
+	// Close releases any resources held by the client. It must be called when
+	// the client is no longer needed.
 	Close() error
+	// Latest returns the latest version number for each known area. The map
+	// key is the area identifier and the value is its current version.
 	Latest(ctx context.Context) (map[string]int, error)
+	// GetMeta fetches the dataset metadata for a specific area and version.
 	GetMeta(ctx context.Context, area string, version int) (*DatasetMeta, error)
+	// GetGridInfo lists the grids available in a dataset, along with the raw
+	// size of each grid's data blob.
 	GetGridInfo(ctx context.Context, d *DatasetMeta) ([]GridInfo, error)
+	// GetGridMeta fetches the parameter metadata for a specific grid within a
+	// dataset.
 	GetGridMeta(ctx context.Context, d *DatasetMeta, gridid string) (*MetaCollection, error)
+	// GetData opens a streaming reader for the raw forecast data of a grid.
 	GetData(ctx context.Context, d *DatasetMeta, gridid string) (DataReader, error)
+	// GetDataRange opens a reader for a byte range within a grid's data blob.
+	// from is the start offset and length is the number of bytes to read.
 	GetDataRange(ctx context.Context, d *DatasetMeta, hash string, from, length int) (io.ReadCloser, error)
+	// GetLatitude opens a streaming reader for the latitude coordinates of a
+	// grid.
 	GetLatitude(ctx context.Context, d *DatasetMeta, gridid string) (DataReader, error)
+	// GetLongitude opens a streaming reader for the longitude coordinates of a
+	// grid.
 	GetLongitude(ctx context.Context, d *DatasetMeta, gridid string) (DataReader, error)
 }
 
@@ -28,6 +47,10 @@ type client struct {
 	bucket *blob.Bucket
 }
 
+// NewClient opens a blob bucket at connectURL and returns a Client backed by
+// it. The URL format is determined by the gocloud.dev/blob driver in use
+// (e.g. "s3://my-bucket", "gs://my-bucket", "azblob://my-container").
+// The connection attempt times out after 5 seconds.
 func NewClient(connectURL string) (Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -40,6 +63,8 @@ func NewClient(connectURL string) (Client, error) {
 	return NewClientFromBucket(bucket), nil
 }
 
+// NewClientFromBucket returns a Client backed by an already-open blob.Bucket.
+// Useful in tests or when the caller manages the bucket lifecycle directly.
 func NewClientFromBucket(bucket *blob.Bucket) Client {
 	return &client{bucket}
 }
@@ -97,8 +122,12 @@ func (c *client) GetMeta(ctx context.Context, area string, version int) (*Datase
 	return &ret, nil
 }
 
+// GridInfo describes a single grid within a dataset.
 type GridInfo struct {
-	ID          string
+	// ID is the grid identifier (the path segment between the version and the
+	// file name in the bucket layout).
+	ID string
+	// RawDataSize is the size in bytes of the raw data blob for this grid.
 	RawDataSize int64
 }
 
@@ -158,6 +187,8 @@ func (c *client) GetGridMeta(ctx context.Context, d *DatasetMeta, gridid string)
 	return &ret, nil
 }
 
+// DataReader is a streaming reader that also exposes the total byte size of
+// the underlying blob. Callers must call Close when done.
 type DataReader interface {
 	io.ReadCloser
 	Size() int64
