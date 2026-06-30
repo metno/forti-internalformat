@@ -1,10 +1,10 @@
 # forti-internalformat
 
-Code and documentation for Forti's internal data format. This document is intended for developers who need to read or write the format directly.
+Code and documentation for [Forti](https://github.com/metno/forti)'s internal data format. This is intended for developers who need to read or write the format directly.
 
 ## Overview
 
-Forti's internal format is used for storing forecast data in blob storage and is consumed by `rawdataforecaster`.
+Forti's internal format is used for storing forecast data in blob storage and is consumed by forti's `rawdataforecaster`.
 
 Data is organized into **areas** and **versions**:
 
