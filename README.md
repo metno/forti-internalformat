@@ -33,7 +33,7 @@ All data for a given area/version lives under `/<area>/<version>/` in blob stora
 
 ### `complete.json`
 
-Metadata about the area/version as a whole. Its structure is described by `DatasetMeta` in [`collector.go`](collector.go).
+Metadata about the area/version as a whole. Its structure is described by `DatasetMeta` in [`structs.go`](structs.go).
 
 > **Important:** This file should be uploaded last. Its presence is supposed to trigger an update in `rawdataforecaster`.
 
@@ -43,7 +43,7 @@ Each subfolder represents a distinct resolution (a unique set of lat/lon values)
 
 #### `meta.json`
 
-Describes the meaning of the forecast values. Structure is defined by `MetaCollection` in [`collector.go`](collector.go). See [`collector_test.go`](collector_test.go) for an example.
+Describes the meaning of the forecast values. Structure is defined by `MetaCollection` in [`structs.go`](structs.go). See [`structs_test.go`](structs_test.go) for an example.
 
 #### `latitude` and `longitude`
 
@@ -59,4 +59,4 @@ To look up data for a specific location:
 2. Multiply that index by `number_of_points` (from the metadata) to get the starting offset in `data`.
 3. Read `number_of_points` values from that offset and interpret them using the metadata.
 
-See [`collector_test.go`](collector_test.go) for a working example.
+See [`structs_test.go`](structs_test.go) for a working example.
